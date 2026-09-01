@@ -1,0 +1,73 @@
+openapi: 3.1.0
+info:
+  title: TikZ Rendering Service API
+  description: High-performance TikZ/LaTeX rendering service.
+  version: 0.0.1
+servers:
+  - url: http://localhost:8080
+    description: Local Development Server
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: サーバーの稼働状態を確認するヘルスチェックエンドポイント。
+      operationId: checkHealth
+      responses:
+        '200':
+          description: サーバーが正常に稼働中
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '500':
+          description: 内部サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: サービス利用不可
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      description: ヘルスチェックのレスポンススキーマ。
+      required:
+        - status
+        - version
+      properties:
+        status:
+          type: string
+          example: ok
+          description: サーバーのステータス。
+        version:
+          type: string
+          example: 1.0.0
+          description: APIのバージョン情報。
+
+    ErrorResponse:
+      type: object
+      description: 共通エラーレスポンススキーマ。
+      required:
+        - status
+        - error_code
+        - message
+      properties:
+        status:
+          type: string
+          example: error
+          description: エラーステータス。
+        error_code:
+          type: string
+          example: INTERNAL_SERVER_ERROR
+          description: エラー分類コード。
+        message:
+          type: string
+          example: "Internal server error occurred."
+          description: エラーメッセージの詳細。
