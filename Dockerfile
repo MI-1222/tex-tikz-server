@@ -1,7 +1,7 @@
 # ==============================================================================
 # Stage 1: Go アプリケーションの静的ビルド (Builder)
 # ==============================================================================
-FROM golang:1.24-alpine AS builder
+FROM golang:alpine AS builder
 
 WORKDIR /src
 
@@ -26,19 +26,21 @@ FROM debian:bookworm-slim AS runner
 # 非対話モードでのインストール設定
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 最小限の TeX Live / 日本語環境 / dvisvgm / HaranoAji フォントのインストール
+# 最小限の TeX Live / 日本語環境 / dvisvgm のインストール
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     texlive-lang-japanese \
     texlive-pictures \
     texlive-latex-recommended \
-    texlive-latex-extra \
     texlive-science \
+    texlive-latex-extra \
     dvisvgm \
-    fonts-haranoaji \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
-    && rm -rf /usr/share/doc/* /usr/share/man/*
+    && rm -rf /usr/share/doc/* /usr/share/man/* /usr/share/info/* /usr/share/locale/* \
+    && rm -rf /usr/share/texlive/texmf-dist/doc \
+    && rm -rf /usr/share/texlive/texmf-dist/source \
+    && rm -rf /usr/share/texlive/texmf-dist/fonts/source
 
 # 非 root ユーザーの作成 (セキュリティ対策)
 RUN useradd -m -u 10001 -s /bin/sh appuser

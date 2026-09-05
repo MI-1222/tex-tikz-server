@@ -1,4 +1,4 @@
-.PHONY: all gen build test test-integration clean run vet help
+.PHONY: all gen build test test-integration clean run vet docker-build docker-buildx docker-size help
 
 # デフォルトターゲット。
 all: gen build
@@ -28,6 +28,23 @@ vet:
 run:
 	go run ./cmd/server
 
+# Docker イメージのビルド。
+IMAGE_NAME ?= tex-tikz-server
+IMAGE_TAG ?= latest
+
+docker-build:
+	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
+	@echo "ビルド完了: $(IMAGE_NAME):$(IMAGE_TAG)"
+	@docker images $(IMAGE_NAME):$(IMAGE_TAG) --format "Image Size: {{.Size}}"
+
+# マルチプラットフォーム Docker イメージのビルド (linux/amd64, linux/arm64)。
+docker-buildx:
+	docker buildx build --platform linux/amd64,linux/arm64 -t $(IMAGE_NAME):$(IMAGE_TAG) .
+
+# Docker イメージサイズの確認。
+docker-size:
+	docker images $(IMAGE_NAME):$(IMAGE_TAG)
+
 # 一時ファイルやビルド成果物のクリーンアップ。
 clean:
 	rm -rf bin/ tmp/
@@ -41,4 +58,6 @@ help:
 	@echo "\tmake test-integration - 結合テストを実行"
 	@echo "\tmake vet              - go vet による静的解析を実行"
 	@echo "\tmake run              - ローカルでサーバーを起動"
+	@echo "\tmake docker-build     - Docker イメージをビルドしてサイズを表示"
+	@echo "\tmake docker-buildx    - マルチプラットフォーム (amd64/arm64) で Docker ビルド"
 	@echo "\tmake clean            - ビルド成果物および一時ファイルを削除"
