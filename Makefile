@@ -1,4 +1,4 @@
-.PHONY: all gen build test test-integration clean run vet docker-build docker-buildx docker-size docker-run docker-stop test-container help
+.PHONY: all gen build test test-integration test-e2e test-e2e-docker clean run vet docker-build docker-buildx docker-size docker-run docker-stop test-container help
 
 # デフォルトターゲット。
 all: gen build
@@ -19,6 +19,17 @@ test:
 # 結合テスト実行（integration タグ付きテスト）。
 test-integration:
 	go test -v -race -tags=integration ./...
+
+# E2E シナリオテスト実行。
+test-e2e:
+	go test -v -race ./test/e2e/...
+
+# Docker コンテナに対する E2E シナリオテスト実行。
+test-e2e-docker: docker-run
+	@echo "コンテナに対する E2E テストを実行します..."
+	@sleep 2
+	SERVER_URL=http://localhost:$(PORT) API_KEY=$(API_KEY) go test -v ./test/e2e/...
+	@$(MAKE) docker-stop
 
 # 静的解析・整合性チェック。
 vet:
