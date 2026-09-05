@@ -51,4 +51,4 @@ yarn-error.log*
 # build 成果物
 /bin/
 /dist/
-server
+/server
