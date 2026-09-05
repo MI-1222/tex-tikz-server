@@ -1,0 +1,20 @@
+# Git
+.git
+.gitignore
+
+# 開発用ローカルファイル・ドキュメント
+.local
+.gemini
+*.md
+LICENSE
+
+# ビルド成果物・一時ディレクトリ
+bin/
+tmp/
+scratch/
+*.log
+
+# OS・エディタ固有ファイル
+.DS_Store
+.vscode/
+.idea/
