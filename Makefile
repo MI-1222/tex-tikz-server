@@ -1,11 +1,16 @@
-.PHONY: all gen build test test-integration test-e2e test-e2e-docker clean run vet docker-build docker-buildx docker-size docker-run docker-stop test-container help
+.PHONY: all gen gen-ts build test test-integration test-e2e test-e2e-docker clean run vet docker-build docker-buildx docker-size docker-run docker-stop test-container help
 
 # デフォルトターゲット。
-all: gen build
+all: gen gen-ts build
 
 # OpenAPI スキーマからの Go コード自動生成。
 gen:
 	go generate ./...
+
+# OpenAPI スキーマからの TypeScript 型定義自動生成 (Obsidian プラグイン / クライアント向け)。
+gen-ts:
+	npx -y openapi-typescript api/openapi.yaml -o api/gen/types.ts
+	@echo "TypeScript 型定義を生成しました: api/gen/types.ts"
 
 # Go サーバーバイナリのビルド。
 build:
@@ -92,9 +97,12 @@ clean:
 help:
 	@echo "利用可能な make コマンド:"
 	@echo "\tmake gen              - OpenAPI スキーマから Go コードを自動生成"
+	@echo "\tmake gen-ts           - OpenAPI スキーマから TypeScript 型定義を自動生成"
 	@echo "\tmake build            - サーバーバイナリ (bin/server) をビルド"
 	@echo "\tmake test             - 単体テストを実行"
 	@echo "\tmake test-integration - 結合テストを実行"
+	@echo "\tmake test-e2e         - E2E シナリオテストを実行"
+	@echo "\tmake test-e2e-docker  - Docker コンテナに対して E2E テストを実行"
 	@echo "\tmake vet              - go vet による静的解析を実行"
 	@echo "\tmake run              - ローカルでサーバーを起動"
 	@echo "\tmake docker-build     - Docker イメージをビルドしてサイズを表示"

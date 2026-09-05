@@ -1,0 +1,17 @@
+{
+  "name": "tex-tikz-server",
+  "version": "1.0.0",
+  "description": "TikZ Rendering Service API用 TypeScript型定義ジェネレーター。",
+  "license": "ISC",
+  "author": "MI-1222",
+  "type": "commonjs",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "gen:ts": "openapi-typescript api/openapi.yaml -o api/gen/types.ts"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.13.0"
+  }
+}
