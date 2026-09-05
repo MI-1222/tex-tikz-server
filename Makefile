@@ -36,6 +36,10 @@ test-e2e-docker: docker-run
 	SERVER_URL=http://localhost:$(PORT) API_KEY=$(API_KEY) go test -v ./test/e2e/...
 	@$(MAKE) docker-stop
 
+# ベンチマーク・負荷テスト実行。
+bench:
+	go test -bench=. -benchmem ./test/benchmark/...
+
 # 静的解析・整合性チェック。
 vet:
 	go vet ./...
@@ -103,6 +107,7 @@ help:
 	@echo "\tmake test-integration - 結合テストを実行"
 	@echo "\tmake test-e2e         - E2E シナリオテストを実行"
 	@echo "\tmake test-e2e-docker  - Docker コンテナに対して E2E テストを実行"
+	@echo "\tmake bench            - ベンチマーク・負荷テストを実行"
 	@echo "\tmake vet              - go vet による静的解析を実行"
 	@echo "\tmake run              - ローカルでサーバーを起動"
 	@echo "\tmake docker-build     - Docker イメージをビルドしてサイズを表示"
