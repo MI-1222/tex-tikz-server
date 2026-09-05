@@ -1,0 +1,16 @@
+services:
+  tikz-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tex-tikz-server:latest
+    container_name: tex-tikz-server
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      - PORT=8080
+      - API_KEY=${API_KEY:-dev_secret_key_12345}
+      - CACHE_SIZE=${CACHE_SIZE:-2000}
+      - EXEC_TIMEOUT_SEC=${EXEC_TIMEOUT_SEC:-10}
+      - FONT_DIR=/app/fonts
+    restart: unless-stopped

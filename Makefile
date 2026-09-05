@@ -1,4 +1,4 @@
-.PHONY: all gen build test test-integration clean run vet docker-build docker-buildx docker-size help
+.PHONY: all gen build test test-integration clean run vet docker-build docker-buildx docker-size docker-run docker-stop test-container help
 
 # デフォルトターゲット。
 all: gen build
@@ -28,10 +28,14 @@ vet:
 run:
 	go run ./cmd/server
 
-# Docker イメージのビルド。
+# Docker 関連設定
 IMAGE_NAME ?= tex-tikz-server
 IMAGE_TAG ?= latest
+PORT ?= 8080
+API_KEY ?= test_dev_key_12345
+CONTAINER_NAME ?= tex-tikz-server-local
 
+# Docker イメージのビルド。
 docker-build:
 	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
 	@echo "ビルド完了: $(IMAGE_NAME):$(IMAGE_TAG)"
@@ -44,6 +48,30 @@ docker-buildx:
 # Docker イメージサイズの確認。
 docker-size:
 	docker images $(IMAGE_NAME):$(IMAGE_TAG)
+
+# Docker コンテナのローカル起動。
+docker-run: docker-stop
+	docker run -d --name $(CONTAINER_NAME) -p $(PORT):8080 -e API_KEY=$(API_KEY) $(IMAGE_NAME):$(IMAGE_TAG)
+	@echo "コンテナを起動しました (http://localhost:$(PORT))"
+
+# Docker コンテナの停止・削除。
+docker-stop:
+	@docker stop $(CONTAINER_NAME) >/dev/null 2>&1 || true
+	@docker rm $(CONTAINER_NAME) >/dev/null 2>&1 || true
+
+# コンテナ起動からテスト・停止までの自動検証。
+test-container: docker-run
+	@echo "コンテナの起動待機中..."
+	@sleep 2
+	@echo "1. ヘルスチェックテスト:"
+	@curl -sf http://localhost:$(PORT)/health | grep '"status":"ok"' && echo " [PASS] /health 応答確認"
+	@echo "2. TikZ レンダリングテスト (日本語含む):"
+	@curl -sf -X POST http://localhost:$(PORT)/api/v1/render/tikz \
+		-H "Content-Type: application/json" \
+		-H "X-API-Key: $(API_KEY)" \
+		-d '{"code":"\\begin{tikzpicture}\n\\draw (0,0) circle (1cm);\n\\node at (0,0) {コンテナテスト};\n\\end{tikzpicture}"}' | grep '"status":"success"' && echo " [PASS] TikZ レンダリング成功"
+	@$(MAKE) docker-stop
+	@echo "=== Phase 5 コンテナテスト完了: 全テスト正常終了 ==="
 
 # 一時ファイルやビルド成果物のクリーンアップ。
 clean:
@@ -60,4 +88,7 @@ help:
 	@echo "\tmake run              - ローカルでサーバーを起動"
 	@echo "\tmake docker-build     - Docker イメージをビルドしてサイズを表示"
 	@echo "\tmake docker-buildx    - マルチプラットフォーム (amd64/arm64) で Docker ビルド"
+	@echo "\tmake docker-run       - Docker コンテナをバックグラウンドで起動"
+	@echo "\tmake docker-stop      - 起動中の Docker コンテナを停止・削除"
+	@echo "\tmake test-container   - コンテナ起動・ヘルスチェック・TikZ レンダリングの自動検証"
 	@echo "\tmake clean            - ビルド成果物および一時ファイルを削除"
